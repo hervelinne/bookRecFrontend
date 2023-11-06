@@ -1,0 +1,16 @@
+.home img {
+    animation: updown 3s linear infinite;
+}
+
+  /* Pic that keeps bouncing */
+@keyframes updown {
+    0% {
+        transform: translateY(-10px);
+    }
+    50% {
+        transform: translateY(10px);
+    }
+    100% {
+        transform: translateY(-10px);
+    }
+}
