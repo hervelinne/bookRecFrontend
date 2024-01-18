@@ -46,7 +46,8 @@ form input {
 
 form label {
     margin-top: 15px;
-    color: grey;
+    color: black;
+    font-weight: bold;
 }
 
 form button {

@@ -8,36 +8,25 @@ import SignIn from "./pages/signin/SignIn"
 import SignUp from "./pages/signup/SignUp"
 import AboutUs from "./pages/aboutus/AboutUs"
 import ContactUs from "./pages/contactus/ContactUs"
-import {Logout} from './components/Logout';
+import Books from "./pages/books/books"
+import MyBooks from "./pages/mybooks/mybooks"
+import Homepage from "./pages/homepage/Homepage"
+import BookRec from "./pages/bookrec/bookrec"
+import { ToastContainer } from "react-toastify";
+// import {Logout} from './components/Logout';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // Import Bootstrap JavaScript
-import { Homepage } from './pages/homepage/Homepage';
+
 
 function App() {
   const [data,setData] = useState([])
-  useEffect(()=> {
-    async function fetchData(){
-      console.log(process.env.REACT_APP_API_URL)
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const result = await response.json();
-        console.log(result) 
-        setData (result);
-        } catch (error) {
-        console.error('Error fetching data:', error);
-        }
-      }
-      fetchData();
-  }, [])
+  
   return (
     <div className="App">
       <Router>
           <Navbar/> 
-          <div className="my-5">
+          <div className="my-2">
           <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/homepage" element={<Homepage />} />
@@ -45,11 +34,14 @@ function App() {
               <Route path="/signup" element={<SignUp />} />
               <Route path="/aboutus" element={<AboutUs />} />
               <Route path="/contactus" element={<ContactUs />} /> 
-              <Route path="/logout" element={<Logout/>}/>
+              <Route path="/books" element={<Books />} /> 
+              <Route path="/mybooks" element={<MyBooks />} />
+              <Route path="/bookrec" element={<BookRec />} />
           </Routes>
           </div>
-          <Footer/>
+          <ToastContainer />
       </Router>
+      <Footer className="fixed-bottom"/>
     </div>
   );
 }

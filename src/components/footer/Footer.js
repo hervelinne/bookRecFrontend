@@ -9,7 +9,7 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 function Footer() {
   return (
-    <div className="footer navbar fixed-bottom navbar-dark bg-dark">
+    <div className="footer navbar navbar-dark bg-dark">
       <div className="socialMedia">
           <InstagramIcon /><TwitterIcon/><FacebookIcon /><LinkedInIcon />
       </div>

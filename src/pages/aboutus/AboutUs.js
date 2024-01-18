@@ -7,7 +7,7 @@ function AboutUs() {
   return (
     <div className="about-us">
 
-      <Image src={MultipleBooks} fluid style={{ height: '300px', objectFit: 'cover'  }} />
+      <Image src={MultipleBooks} fluid style={{ height: '300px', objectFit: 'cover', marginTop: "-30px"  }} />
       <div className="about-us-bottom">
           <h1 className="pt-3" style={{fontSize:"3.5em", fontWeight: "bold"}}> ABOUT US </h1>
           <p className="pt-4 text-center" style={{fontSize:"1.3em"}}>

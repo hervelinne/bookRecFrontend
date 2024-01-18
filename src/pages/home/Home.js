@@ -1,15 +1,8 @@
 import "./Home.css";
-import React from "react";
 import BannerImage from "../../assets/img/GirlReading.svg";
-import {useEffect, useState} from "react";
-import axios from "axios";
+
 
 function Home() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-  }, []);
-
   return (
     <div className="home container-fluid">
       <div className="row">
