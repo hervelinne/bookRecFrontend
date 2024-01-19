@@ -23,38 +23,47 @@ export default function Books () {
     const [savingBook, setSavingBook] = useState(false);
     const [showRatingPopup, setShowRatingPopup] = useState(false);
     const [rating, setRating] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchCurrentPage, setSearchCurrentPage] = useState(1);
+    const [searchHasNextPage, setSearchHasNextPage] = useState(false);
 
 
     useEffect(() => {
+        fetchData();
+    }, [books.length, currentPage, searchTerm, searchCurrentPage]);
+  
         const fetchData = async () => {
-          try {
-            setLoading(true); // Set loading to true before fetching data
-            const response = await axios.get(`http://localhost:8000/api/books_list/?page=${currentPage}`);
+        try {
+            setLoading(true);
+            let apiUrl = `http://localhost:8000/api/books_list/?page=${currentPage}`;
+    
+            // Use search API if there is a search term
+            if (searchTerm) {
+            apiUrl = `http://localhost:8000/api/get_books_by_keyword_genre/?keyword=${searchTerm}&page=${searchCurrentPage}`;
+            setHasNextPage(searchHasNextPage);
+            }
+    
+            const response = await axios.get(apiUrl);
+            if (searchTerm) {
+            setSearchResults(response.data.results);
+            setSearchHasNextPage(response.data.next !== null);
+            } else {
             setBooks(response.data.results);
-            console.log("########################"+books.length)
             setHasNextPage(response.data.next !== null);
-            const savedBooksResponse = await axios.get('http://localhost:8000/api/get_saved_books/', {
-                method: 'GET',
-                params: {
-                    userId: localStorage.getItem('user_id'),
-                },
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                    
-            });
-            setSavedBooks(savedBooksResponse.data.saved_books); 
+            }
             setError(null);
-          } catch (error) {
+        } catch (error) {
             console.error('Error fetching books:', error);
             setError('Error fetching books. Please try again.');
-          } finally {
-            setLoading(false); // Set loading to false after data is fetched or on error
-          }
-        };
-    
-        fetchData();
-      }, [books.length, currentPage]);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const handleSearch = async () => {
+        setSearchCurrentPage(1);
+        await fetchData();
+      };
 
         // Function to truncate the description to a specified number of words
         const truncateDescription = (description) => {
@@ -73,6 +82,8 @@ export default function Books () {
                 (index % 5 === 2) ? "btn-outline-danger" : (index % 5 === 3) ? "btn-outline-warning" : 
                 (index % 5 === 4) ? "btn-outline-info" :  "btn-outline-light" 
         }
+
+       
 
         const handleSaveBook = async (book) => {
             try {
@@ -133,6 +144,27 @@ export default function Books () {
         <Container className='books'>
             
           <h2 style={{textAlign: "center" ,fontSize:"3em", fontWeight: "bold", marginBottom: "1em"}}>Book List</h2>
+          
+          {/* Search bar */}
+            <div className="mb-3 d-flex justify-content-center align-items-center">
+                    <input
+                        className="form-control"
+                        style={{ width: "30%", marginRight: "1em" }}
+                        type="search"
+                        placeholder="Search by keyword or genre"
+                        aria-label="Search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Button
+                        className="btn btn-outline-success"
+                        style={{ color: "white" }}
+                        type="submit"
+                        onClick={handleSearch}
+                    >
+                        Search
+                    </Button>
+            </div>
           <Pagination>
                 {currentPage !== 1 && (
                     <>
@@ -149,7 +181,49 @@ export default function Books () {
                 </Spinner>
                 ) : (
                     <Row>
-                        {books.map((book) => (
+                        {searchTerm && searchResults.length > 0 ? (
+                        searchResults.map((book) => (
+                            <Col key={book.id} xs={12} md={6} lg={4} style={{ marginBottom: '1rem' }}>
+                                <Card  style={{ height: '100%' }}>
+                                    <Card.Header className="d-grid gap-2 d-md-block" >
+                                        <Card.Text><b>Rating :</b> {book.avg_rating} ⭐️</Card.Text>
+                                        <Card.Text><b>Number of ratings : </b>{book.num_ratings}</Card.Text>
+                                    </Card.Header>
+                                    <Card.Body className="position-relative">
+                                        <Card.Title >{book.book}</Card.Title>
+                                        <Card.Subtitle className="mb-2 text-muted">{book.author}</Card.Subtitle>
+                                        <Card.Text>{truncateDescription(book.description)}...</Card.Text>
+                                        <Button
+                                        onClick={() => handleSaveBook(book)}
+                                        variant="primary"
+                                        disabled={isBookSaved(book.id) || savingBook}
+                                        >
+                                        {isBookSaved(book.id) ? 'Saved ❤️ ' : 'Save 💙 '}
+                                        </Button>
+                            
+                                        <Card.Link href={book.url}  >
+                                                <Button variant="link">Check the book</Button>
+                                        </Card.Link>
+                                        
+                                    </Card.Body>
+                                    <Card.Footer className="text-muted ">
+                                        <p style={{textAlign: "center", fontWeight: "bold"}}>Genres :</p>
+                                         {handleGenres(book.genres).map((genre, index) => (
+                                            index <= 4 ? (
+                                                <button
+                                                    key={index}
+                                                    className={`btn ${test(index)} m-1`}
+                                                    type="button"
+                                                >
+                                                    {genre}
+                                                </button>
+                                            ) : null
+                                        ))}
+                                    </Card.Footer>
+                                </Card>
+                            </Col>
+                        ))
+                        ) :books.map((book) => (
                             <Col key={book.id} xs={12} md={6} lg={4} style={{ marginBottom: '1rem' }}>
                                 <Card  style={{ height: '100%' }}>
                                     <Card.Header className="d-grid gap-2 d-md-block" >
@@ -194,16 +268,19 @@ export default function Books () {
                 
                 )}
                 
-            {/* Add pagination controls */}
+            {/* Pagination controls */}
             <Pagination>
-                {currentPage !== 1 && (
-                    <>
-                        <Pagination.First onClick={() => setCurrentPage(1)} />
-                        <Pagination.Prev onClick={() => setCurrentPage(currentPage - 1)} />
-                    </>
-                )}
-                <Pagination.Item active>{currentPage}</Pagination.Item>
-                {hasNextPage && <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)}/>}
+            {searchTerm && searchCurrentPage !== 1 && (
+                <>
+                <Pagination.First onClick={() => setSearchCurrentPage(1)} />
+                <Pagination.Prev onClick={() => setSearchCurrentPage(searchCurrentPage - 1)} />
+                </>
+            )}
+            <Pagination.Item active>{searchTerm ? searchCurrentPage : currentPage}</Pagination.Item>
+            {searchTerm && searchHasNextPage && (
+                <Pagination.Next onClick={() => setSearchCurrentPage(searchCurrentPage + 1)} />
+            )}
+            {!searchTerm && hasNextPage && <Pagination.Next onClick={() => setCurrentPage(currentPage + 1)} />}
             </Pagination>
 
 
